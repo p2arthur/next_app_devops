@@ -52,21 +52,28 @@ jobs:
           key: ${{ secrets.EC2_KEY }}
           script: |
             set -e
-            # If your GHCR package is PUBLIC, pull without login:
-            docker pull ${{ env.IMAGE_NAME }}:latest
+
+            # --- FIX: INSTALL DOCKER ---
+            # 1. Install and start Docker (for Amazon Linux 2)
+            sudo yum update -y
+            sudo amazon-linux-extras install docker -y
+            sudo service docker start
+
+            # --- FIX: USE SUDO ---
+            # 2. Now run your Docker commands with 'sudo'
+            sudo docker pull ${{ env.IMAGE_NAME }}:latest
 
             # Stop and remove prior container if exists
-            docker ps -aq --filter "name=next-ec2" | xargs -r docker rm -f
+            sudo docker ps -aq --filter "name=next-ec2" | xargs -r sudo docker rm -f
 
             # Run new container on port 80 -> 3000
-            docker run -d \
+            sudo docker run -d \
               --name next-ec2 \
               --restart unless-stopped \
               -p 80:3000 \
               -e NODE_ENV=production \
               ${{ env.IMAGE_NAME }}:latest
 
-      # --- THIS IS THE NEW STEP YOU REQUESTED ---
       - name: Notify Lambda of Deployment Status
         if: always() # This is crucial: it runs even if the deploy step fails
         run: |
