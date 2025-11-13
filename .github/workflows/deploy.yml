@@ -53,14 +53,15 @@ jobs:
           script: |
             set -e
 
-            # Pull the latest image (no sudo needed)
-            docker pull ${{ env.IMAGE_NAME }}:latest
+            # --- ADD SUDO BACK ---
+            # Pull the latest image
+            sudo docker pull ${{ env.IMAGE_NAME }}:latest
 
-            # Stop and remove prior container (no sudo needed)
-            docker ps -aq --filter "name=next-ec2" | xargs -r docker rm -f
+            # Stop and remove prior container
+            sudo docker ps -aq --filter "name=next-ec2" | xargs -r sudo docker rm -f
 
-            # Run new container (no sudo needed)
-            docker run -d \
+            # Run new container
+            sudo docker run -d \
               --name next-ec2 \
               --restart unless-stopped \
               -p 80:3000 \
